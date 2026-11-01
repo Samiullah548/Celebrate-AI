@@ -12,32 +12,43 @@ export async function generateAIPlan(eventData) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(eventData),
-      signal: AbortSignal.timeout(45000),
+      signal: AbortSignal.timeout(60000),
     })
 
     if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: 'Server error' }))
-      throw new Error(err.error || `Server responded with ${response.status}`)
+      let errorMessage = `Server error (${response.status})`
+      try {
+        const errJson = await response.json()
+        if (errJson && errJson.error) {
+          errorMessage = errJson.error
+        }
+      } catch {
+        const rawText = await response.text().catch(() => '')
+        if (rawText && !rawText.toLowerCase().includes('<!doctype') && !rawText.toLowerCase().includes('<html')) {
+          errorMessage = rawText.slice(0, 160)
+        } else if (response.status === 405) {
+          errorMessage = 'API routing error (405 Method Not Allowed). Check Vercel serverless function configuration.'
+        } else if (response.status === 504) {
+          errorMessage = 'Gateway timeout (504). AI generation took longer than allowed.'
+        }
+      }
+      throw new Error(errorMessage)
     }
 
     const data = await response.json()
-    if (data.fallback) {
+    if (data.isFallback || data.fallback) {
       return { ...data, isFallback: true }
     }
     return { ...data, isFallback: false }
   } catch (err) {
-    // Network error or backend unavailable - use fallback
     if (err.name === 'AbortError') {
-      throw new Error('Request timed out. Please try again.')
+      throw new Error('AI plan generation timed out (60s). Please try again.')
     }
-    // If it's a server-side error message, re-throw it
-    if (err.message && !err.message.includes('fetch')) {
-      throw err
-    }
-    // Backend unavailable - use client-side fallback
-    return generateFallbackPlan(eventData)
+    // Propagate meaningful error messages to the UI
+    throw err
   }
 }
+
 
 // ─── Rule-Based Fallback Planner ─────────────────────────────────────────────
 

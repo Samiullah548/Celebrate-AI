@@ -1,7 +1,6 @@
 import { GoogleGenAI } from '@google/genai'
 import { generateFallbackPlan } from '../services/fallback.js'
 
-const MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
 
 function buildPrompt(eventData) {
   const {
@@ -83,30 +82,61 @@ function validatePlan(data) {
   return data
 }
 
+export function sanitizeErrorMessage(msg) {
+  if (!msg || typeof msg !== 'string') return 'An error occurred during AI plan generation.'
+  return msg
+    .replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED_KEY]')
+    .replace(/AQ\.[0-9A-Za-z-_]+/g, '[REDACTED_KEY]')
+}
+
 export async function callGemini(eventData) {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY not configured')
+    throw new Error('GEMINI_API_KEY is not configured on the server. Please add GEMINI_API_KEY in your Vercel Project Settings > Environment Variables.')
   }
 
   const ai = new GoogleGenAI({ apiKey })
   const prompt = buildPrompt(eventData)
+  const primaryModel = process.env.GEMINI_MODEL || 'gemini-3.5-flash'
 
-  const response = await ai.models.generateContent({
-    model: MODEL,
-    contents: prompt,
-    config: {
-      temperature: 0.7,
-      maxOutputTokens: 4096,
-    },
-  })
+  let response
+  try {
+    response = await ai.models.generateContent({
+      model: primaryModel,
+      contents: prompt,
+      config: {
+        temperature: 0.7,
+        maxOutputTokens: 8192,
+        responseMimeType: 'application/json',
+      },
+    })
+  } catch (err) {
+    // If the primary model fails or is overloaded (503/404), try gemini-3.5-flash-lite
+    if (primaryModel !== 'gemini-3.5-flash-lite') {
+      console.warn(`[Gemini] Primary model ${primaryModel} failed (${err.message}), retrying with gemini-3.5-flash-lite...`)
+      response = await ai.models.generateContent({
+        model: 'gemini-3.5-flash-lite',
+        contents: prompt,
+        config: {
+          temperature: 0.7,
+          maxOutputTokens: 8192,
+          responseMimeType: 'application/json',
+        },
+      })
+    } else {
+      throw err
+    }
+  }
 
-  const text = response.text?.()
-  if (!text) throw new Error('Empty response from Gemini')
+  const rawText = typeof response.text === 'function' ? response.text() : response.text
+  if (!rawText) throw new Error('Empty response received from Gemini AI')
 
-  // Extract JSON from response (strip any markdown fences)
-  const jsonMatch = text.match(/\{[\s\S]*\}/)
-  if (!jsonMatch) throw new Error('No JSON found in Gemini response')
+  // Clean markdown code blocks if present
+  const cleanedText = rawText.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
+
+  // Extract JSON from response
+  const jsonMatch = cleanedText.match(/\{[\s\S]*\}/)
+  if (!jsonMatch) throw new Error('No valid JSON plan found in Gemini response')
 
   const parsed = JSON.parse(jsonMatch[0])
   return validatePlan(parsed)
@@ -117,8 +147,10 @@ export async function callGeminiWithFallback(eventData) {
     const plan = await callGemini(eventData)
     return { ...plan, isFallback: false }
   } catch (err) {
-    console.warn('[Gemini] Falling back to rule-based plan:', err.message)
+    console.warn('[Gemini] AI generation failed:', err.message)
+    // If explicitly requested to throw (or in production verification), propagate or fallback with warning
     const fallback = generateFallbackPlan(eventData)
-    return { ...fallback, isFallback: true }
+    return { ...fallback, isFallback: true, warning: sanitizeErrorMessage(err.message) }
   }
 }
+
