@@ -153,10 +153,11 @@ const CURRENCY_FORMATS = {
 }
 
 export function formatCurrency(amount, currency = 'INR') {
-  const fmt = CURRENCY_FORMATS[currency] || CURRENCY_FORMATS.INR
+  const code = CURRENCY_FORMATS[currency] ? currency : 'INR'
+  const fmt = CURRENCY_FORMATS[code]
   return new Intl.NumberFormat(fmt.locale, {
     style: 'currency',
-    currency: currency,
+    currency: code,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount || 0)

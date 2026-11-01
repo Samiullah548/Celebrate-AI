@@ -74,11 +74,16 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' })
 })
 
+// ─── Export app for testing and serverless usage ────────────────────────────
+export { app }
+
 // ─── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`✅ CelebrateAI server running on port ${PORT}`)
-  console.log(`   Allowed origins: ${allowedOrigins.join(', ')}`)
-  if (!process.env.GEMINI_API_KEY) {
-    console.warn('⚠️  GEMINI_API_KEY not set — AI generation will use fallback mode')
-  }
-})
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`✅ CelebrateAI server running on port ${PORT}`)
+    console.log(`   Allowed origins: ${allowedOrigins.join(', ')}`)
+    if (!process.env.GEMINI_API_KEY) {
+      console.warn('⚠️  GEMINI_API_KEY not set — AI generation will use fallback mode')
+    }
+  })
+}

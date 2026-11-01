@@ -81,20 +81,27 @@
     @apply glass-card p-5 hover:border-primary/20 transition-all duration-300;
   }
 
+  /* Focus visibility for accessibility */
+  :focus-visible {
+    outline: 2px solid #8B5CF6;
+    outline-offset: 2px;
+  }
+
+  /* High contrast badge text styles for WCAG AA compliance */
   .badge {
-    @apply text-xs font-semibold px-2.5 py-1 rounded-full;
+    @apply text-xs font-semibold px-2.5 py-1 rounded-full inline-flex items-center;
   }
 
   .badge-high {
-    @apply badge bg-error/20 text-error;
+    @apply badge bg-error/20 text-[#FCA5A5];
   }
 
   .badge-medium {
-    @apply badge bg-warning/20 text-warning;
+    @apply badge bg-warning/20 text-[#FDE047];
   }
 
   .badge-low {
-    @apply badge bg-success/20 text-success;
+    @apply badge bg-success/20 text-[#6EE7B7];
   }
 
   .tab-btn {

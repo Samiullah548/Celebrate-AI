@@ -69,14 +69,14 @@ export default function LandingPage() {
       {/* Hero */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-4 py-20 text-center overflow-hidden">
         {/* Background glow */}
-        <div className="absolute inset-0 bg-hero-glow pointer-events-none" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-highlight/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-hero-glow pointer-events-none" aria-hidden="true" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-highlight/5 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
 
         <div className="relative z-10 max-w-4xl mx-auto">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8">
-            <Sparkles size={14} />
+            <Sparkles size={14} aria-hidden="true" />
             AI-Powered Event Planning
           </div>
 
@@ -94,23 +94,25 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
               id="hero-cta"
+              type="button"
               onClick={() => navigate('/create')}
               className="btn-primary text-base px-8 py-3.5 flex items-center justify-center gap-2 group"
             >
               Plan My Event
-              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
             </button>
             <button
+              type="button"
               onClick={scrollToFeatures}
               className="btn-secondary text-base px-8 py-3.5 flex items-center justify-center gap-2"
             >
               Explore Features
-              <ChevronDown size={18} />
+              <ChevronDown size={18} aria-hidden="true" />
             </button>
           </div>
 
           {/* Floating stats */}
-          <div className="flex flex-wrap justify-center gap-6 mt-16">
+          <div className="flex flex-wrap justify-center gap-6 mt-16" aria-label="Key Highlights">
             {[
               { value: '8+', label: 'Event Types' },
               { value: 'AI', label: 'Powered by Gemini' },
@@ -126,19 +128,23 @@ export default function LandingPage() {
       </section>
 
       {/* Event Types */}
-      <section className="py-16 px-4 bg-secondaryBg">
+      <section className="py-16 px-4 bg-secondaryBg" aria-labelledby="event-types-heading">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-center text-2xl font-bold text-text mb-3">Plan Any Celebration</h2>
+          <h2 id="event-types-heading" className="text-center text-2xl font-bold text-text mb-3">
+            Plan Any Celebration
+          </h2>
           <p className="text-center text-subText mb-10">From intimate gatherings to grand events</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {EVENT_TYPES.map(({ icon: Icon, label, color }) => (
               <button
                 key={label}
+                type="button"
                 onClick={() => navigate('/create')}
-                className="glass-card p-5 flex flex-col items-center gap-3 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 group"
+                aria-label={`Plan a ${label} celebration`}
+                className="glass-card p-5 flex flex-col items-center gap-3 hover:border-primary/30 hover:-translate-y-1 transition-all duration-300 group focus-visible:ring-2 focus-visible:ring-primary"
               >
                 <div className="w-12 h-12 rounded-xl bg-white/5 group-hover:bg-primary/10 flex items-center justify-center transition-colors">
-                  <Icon size={22} className={color} />
+                  <Icon size={22} className={color} aria-hidden="true" />
                 </div>
                 <span className="text-sm font-medium text-text">{label}</span>
               </button>
@@ -148,61 +154,72 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="py-20 px-4">
+      <section id="features" className="py-20 px-4" aria-labelledby="features-heading">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-text mb-3">Everything You Need to Plan a Perfect Event</h2>
-            <p className="text-subText max-w-xl mx-auto">Powerful tools backed by AI to take the stress out of event planning</p>
+            <h2 id="features-heading" className="text-3xl font-bold text-text mb-3">
+              Everything You Need to Plan a Perfect Event
+            </h2>
+            <p className="text-subText max-w-xl mx-auto">
+              Powerful tools backed by AI to take the stress out of event planning
+            </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {FEATURES.map(({ icon: Icon, title, description }) => (
-              <div key={title} className="glass-card p-6 hover:border-primary/20 transition-all duration-300">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+              <article key={title} className="glass-card p-6 hover:border-primary/20 transition-all duration-300">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center mb-4" aria-hidden="true">
                   <Icon size={20} className="text-primary" />
                 </div>
                 <h3 className="text-base font-semibold text-text mb-2">{title}</h3>
                 <p className="text-sm text-subText leading-relaxed">{description}</p>
-              </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
       {/* How it Works */}
-      <section className="py-20 px-4 bg-secondaryBg">
+      <section className="py-20 px-4 bg-secondaryBg" aria-labelledby="how-it-works-heading">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-14">
-            <h2 className="text-3xl font-bold text-text mb-3">How It Works</h2>
+            <h2 id="how-it-works-heading" className="text-3xl font-bold text-text mb-3">How It Works</h2>
             <p className="text-subText">From idea to celebration in four simple steps</p>
           </div>
           <div className="grid md:grid-cols-2 gap-6">
             {HOW_IT_WORKS.map(({ step, title, desc }) => (
-              <div key={step} className="glass-card p-6 flex gap-5">
-                <div className="text-4xl font-black text-gradient opacity-50 shrink-0">{step}</div>
+              <article key={step} className="glass-card p-6 flex gap-5">
+                <div className="text-4xl font-black text-gradient opacity-50 shrink-0" aria-hidden="true">
+                  {step}
+                </div>
                 <div>
                   <h3 className="font-semibold text-text mb-1">{title}</h3>
-                  <p className="text-sm text-subText">{desc}</p>
+                  <p className="text-sm text-subText leading-relaxed">{desc}</p>
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-4 text-center">
+      <section className="py-20 px-4 text-center" aria-labelledby="cta-heading">
         <div className="max-w-2xl mx-auto">
           <div className="glass-card p-10 relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-highlight/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-highlight/5 pointer-events-none" aria-hidden="true" />
             <div className="relative z-10">
-              <Sparkles size={36} className="text-primary mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-text mb-3">Ready to Plan Your Event?</h2>
-              <p className="text-subText mb-8">Start for free. No account required. Your data stays on your device.</p>
+              <Sparkles size={36} className="text-primary mx-auto mb-4" aria-hidden="true" />
+              <h2 id="cta-heading" className="text-3xl font-bold text-text mb-3">
+                Ready to Plan Your Event?
+              </h2>
+              <p className="text-subText mb-8">
+                Start for free. No account required. Your data stays on your device.
+              </p>
               <button
+                type="button"
                 onClick={() => navigate('/create')}
                 className="btn-primary text-base px-10 py-3.5 flex items-center gap-2 mx-auto"
               >
-                Plan My Event <ArrowRight size={18} />
+                Plan My Event <ArrowRight size={18} aria-hidden="true" />
               </button>
             </div>
           </div>
